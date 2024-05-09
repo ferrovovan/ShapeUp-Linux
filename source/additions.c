@@ -3,26 +3,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <inttypes.h>
-#include <float.h> 
-
-#include "shaders.h"
-
-#include "raylib.h"
-#include "raymath.h"
-#include "rlgl.h"
-
-#define DEMO_VIDEO_FEATURES 0
-
-
-Vector3 GetCameraRight(Camera *camera);
-Vector3 GetCameraForward(Camera *camera);
-void CameraMoveForward(Camera *camera, float distance, bool moveInWorldPlane);
-void CameraMoveUp(Camera *camera, float distance);
-void CameraMoveRight(Camera *camera, float distance, bool moveInWorldPlane);
-
-#define RAYGUI_IMPLEMENTATION
-#include "raygui.h"
-#include "dark.h"
+#include <float.h>
 
 
 #define print(...) TraceLog(LOG_ERROR, __VA_ARGS__)
@@ -788,6 +769,11 @@ void export(void) {
 				float val6 = pixels2[(x_index+1+(y_index+1)*slice_count_x)*1] ;
 				float val7 = pixels2[(x_index  +(y_index+1)*slice_count_x)*1] ;
 
+/*
+				Vector4 *vectors4_points;
+				int vectors4_len = 0;
+			#define add_vector(x, y, z, k) \
+*/
 				Vector4 v0 = {
 					bounds.min.x + x_index*x_step,
 					bounds.min.y + y_index*y_step,
@@ -816,6 +802,13 @@ void export(void) {
 				if (edgeTable[cubeindex] == 0) continue;
 
 				Vector3 vertlist[12];
+/*
+				mapping_index = {
+				for (int i=1 ;i <= 12; ++i){
+					if (edgeTable[cubeindex] & (1 << i))
+						vertlist[i] = VertexInterp(v0,v1, SDF_THRESHOLD);
+				}
+*/
 				if (edgeTable[cubeindex] & 1) vertlist[0] = VertexInterp(v0,v1, SDF_THRESHOLD);
 				if (edgeTable[cubeindex] & 2) vertlist[1] = VertexInterp(v1,v2, SDF_THRESHOLD);
 				if (edgeTable[cubeindex] & 4) vertlist[2] = VertexInterp(v2,v3, SDF_THRESHOLD);
@@ -829,7 +822,7 @@ void export(void) {
 				if (edgeTable[cubeindex] & 1024) vertlist[10] = VertexInterp(v2,v6, SDF_THRESHOLD);
 				if (edgeTable[cubeindex] & 2048) vertlist[11] = VertexInterp(v3,v7, SDF_THRESHOLD);
 
-				for (int i=0;triTable[cubeindex][i]!=-1;i+=3) {
+				for (int i=0; triTable[cubeindex][i] != -1; i+=3) {
 					for (int v=0; v < 3; v++) {
 						Vector3 pt = vertlist[triTable[cubeindex][i + v]];
 						append_format(&data, &data_size, &data_capacity,"v %g %g %g\n", pt.x, -pt.y, pt.z); 
@@ -881,20 +874,17 @@ int object_at_pixel(int x, int y) {
 
 	RenderTexture2D target = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
 
+#define rl_tex_coord_macro(new_x, new_y) \
+	rlTexCoord2f(new_x, new_y); \
+	rlVertex2f(new_x, new_y);
+
 	BeginTextureMode(target); {
 		BeginShaderMode(shader); {
 			rlBegin(RL_QUADS);
-			rlTexCoord2f(x-1, y-1);
-			rlVertex2f(x-1, y-1);
-
-			rlTexCoord2f(x-1, y+1);
-			rlVertex2f(x-1, y+1);
-
-			rlTexCoord2f(x+1, y+1);
-			rlVertex2f(x+1, y+1);
-
-			rlTexCoord2f(x+1, y-1);
-			rlVertex2f(x+1, y-1);
+			rl_tex_coord_macro(x-1, y-1)
+			rl_tex_coord_macro(x-1, y+1)
+			rl_tex_coord_macro(x+1, y+1)
+			rl_tex_coord_macro(x+1, y-1)			
 			rlEnd();
 		} EndShaderMode();
 	} EndTextureMode();

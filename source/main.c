@@ -1,10 +1,16 @@
+#include "main.h"
 #include "additions.c"
 
+#include "shaders.h"
+
+
 int main(void){
+	const int FPS = 60;
+	const int WINDOW_W = 1940 / 2, WINDOW_H = 1100 / 2;
 	// SetTraceLogLevel(LOG_ERROR);
 	lastSave = GetTime();
 	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-	InitWindow(1940/2, 1100/2, "ShapeUp!");
+	InitWindow(WINDOW_W, WINDOW_H, "ShapeUp!");
 	SetExitKey(0);
 
 	GuiLoadStyleDark();
@@ -29,15 +35,12 @@ int main(void){
 		}};
 
 	float runTime = 0.0f;
+	SetTargetFPS(FPS);
 
-	SetTargetFPS(60);
-
-#   ifndef PLATFORM_WEB
 	void swizzleWindow(void);
 	swizzleWindow();
 	void makeWindowKey(void);
 	makeWindowKey();
-#   endif
 
 	const int gamepad = 0;
 
@@ -63,25 +66,6 @@ int main(void){
 		}
 		#endif
 
-	#ifdef PLATFORM_WEB
-		int w,h,dpi;
-
-		EM_ASM({
-			var pixelsPerPoint = 1; //window.devicePixelRatio;
-			var canvas = document.getElementById('canvas');
-			var width = Math.floor(pixelsPerPoint*canvas.clientWidth);
-			var height = Math.floor(pixelsPerPoint*canvas.clientHeight);
-			canvas.width = width;
-			canvas.height = height;
-			setValue($0, width, "i32");
-			setValue($1, height, "i32");
-			setValue($2, pixelsPerPoint, "i32");
-		}, &w, &h, &dpi);
-
-		if (GetScreenWidth() != w || GetScreenHeight() != h) {
-			SetWindowSize(w, h);
-		}
-	#endif
 
 		if (GetTime() - lastSave > 60) {
 			save("snapshot");
@@ -277,9 +261,7 @@ int main(void){
 					Vector3 shift = Vector3Scale(camera.up, delta.y/10);
 					camera.position = Vector3Add(camera.position, shift);
 					camera.target = Vector3Add(camera.target,shift );
-				#ifdef PLATFORM_WEB
-					delta.x = -delta.x;
-				#endif
+				
 					UpdateCameraPro(&camera, (Vector3){0, -delta.x/10, 0}, Vector3Zero(), 0);
 				}
 			} else if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && !guiSliderDragging && mouseAction == CONTROL_NONE && Vector2Distance(mouseDownPosition, GetMousePosition()) > 1) {
@@ -300,13 +282,11 @@ int main(void){
 				}
 			}
 
-			#ifndef PLATFORM_WEB
 			extern float magnification;
 			if (mouseAction == CONTROL_NONE ) {
 				CameraMoveForward(&camera, 8*magnification, false);
 			}
 			magnification = 0;
-			#endif
 		}
 
 		
@@ -538,11 +518,9 @@ int main(void){
 
 			int y = 20;
 
-			#ifndef PLATFORM_WEB
 			if (GuiButton((Rectangle){20,y,80,20}, "Save")) save("save");
 			if (GuiButton((Rectangle){105,y,80,20}, "Export")) export();
 			y+=30;
-			#endif
 
 			GuiCheckBox((Rectangle){ 20, y+0.5, 20, 20 }, "Show Field", (bool *)&visuals_mode);
 			y+=30;
