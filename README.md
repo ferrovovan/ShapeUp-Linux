@@ -7,4 +7,4 @@ A 3D Modeling tool using constructive solid geometry. More information about the
 [Raylib 4.5.0 release](https://github.com/raysan5/raylib/releases/tag/4.5.0).
 # Building
 
-Once upon a time Linux
+  Когда-нибудь потом
